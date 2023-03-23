@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -26,10 +27,13 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
+    TextView mBuffer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mBuffer = findViewById(R.id.buffer);
     }
 
     @Override
@@ -57,8 +61,6 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton("Connect", (dialog, which) -> {
                     tryToConnect();
                 })
-                //.setNegativeButton(android.R.string.no, null)
-                //.setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
     }
 
@@ -82,7 +84,8 @@ public class MainActivity extends AppCompatActivity {
                 if (msg.what == MESSAGE_READ) {
                     String readMessage = null;
                     readMessage = new String((byte[]) msg.obj, StandardCharsets.UTF_8);
-                    //mReadBuffer.setText(readMessage);
+                    String newText = mBuffer.getText().toString() + "\n" + readMessage;
+                    mBuffer.setText(newText);
                 }
             }
         };

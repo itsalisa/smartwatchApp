@@ -52,8 +52,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void showConnectionDialog() {
         new AlertDialog.Builder(this)
-                .setTitle("Connect to watch?")
-                .setMessage("Connect to 2gdadfdas watch?")
+                .setTitle("Connect to Watch?")
+                .setMessage("Connect to TWatch?")
                 .setPositiveButton("Connect", (dialog, which) -> {
                     tryToConnect();
                 })
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 boolean fail = false;
 
-                BluetoothDevice device = mBTAdapter.getRemoteDevice("MA:C0:AD:DR:ES:S0");
+                BluetoothDevice device = mBTAdapter.getRemoteDevice("08:3A:F2:69:B5:3E");
 
                 try {
                     mBTSocket = createBluetoothSocket(device);

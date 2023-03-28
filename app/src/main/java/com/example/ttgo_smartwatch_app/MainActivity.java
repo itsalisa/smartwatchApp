@@ -82,10 +82,10 @@ public class MainActivity extends AppCompatActivity {
     private void tryToConnect() {
 
       // TODO service
-      //  Intent intent = new Intent(this, ForegroundService.class);
-      //  intent.putExtra(EXTRA_MAC_ADDRESS, "08:3A:F2:69:B5:3E");
-      //  startService(intent);
-      //  if (true) return;
+        Intent intent = new Intent(this, ForegroundService.class);
+        intent.putExtra(EXTRA_MAC_ADDRESS, "08:3A:F2:69:B5:3E");
+        startService(intent);
+        if (true) return;
 
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override

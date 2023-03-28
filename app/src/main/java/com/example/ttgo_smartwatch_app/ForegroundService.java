@@ -20,6 +20,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -43,14 +45,13 @@ public class ForegroundService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String input = intent.getStringExtra("inputExtra");
         createNotificationChannel();
 
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_IMMUTABLE);
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Foreground Service")
-                .setContentText(input)
+                .setContentTitle("Watch Service")
+                .setContentText("Watch Tracking Service Enabled")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentIntent(pendingIntent)
                 .build();
@@ -90,7 +91,7 @@ public class ForegroundService extends Service {
                 if (msg.what == MESSAGE_READ) {
                     String readMessage = null;
                     readMessage = new String((byte[]) msg.obj, StandardCharsets.UTF_8);
-                    Log.d("FROM_BLUETOOTH", readMessage);
+                    parseMessage(readMessage);
                 }
             }
         };
@@ -129,6 +130,24 @@ public class ForegroundService extends Service {
                         .sendToTarget();
             }
         }).start();
+    }
+
+    private void parseMessage(String readMessage) {
+        String[] messages = readMessage.split("\r\n");
+        for (String message : messages) {
+            try {
+
+                JSONObject obj = new JSONObject(message);
+
+                Log.d("My App", obj.toString());
+
+            } catch (Throwable t) {
+                String shortMessage = message.length() > 10
+                        ? message.substring(10)
+                        : message;
+               // Log.e("My App", "Could not parse malformed JSON: \"" + shortMessage + "\"");
+            }
+        }
     }
 
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {

@@ -1,5 +1,7 @@
 package com.example.ttgo_smartwatch_app;
 
+import static com.example.ttgo_smartwatch_app.ForegroundService.EXTRA_MAC_ADDRESS;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -8,6 +10,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -77,6 +80,12 @@ public class MainActivity extends AppCompatActivity {
     private Handler mHandler;
 
     private void tryToConnect() {
+
+      // TODO service
+      //  Intent intent = new Intent(this, ForegroundService.class);
+      //  intent.putExtra(EXTRA_MAC_ADDRESS, "08:3A:F2:69:B5:3E");
+      //  startService(intent);
+      //  if (true) return;
 
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override

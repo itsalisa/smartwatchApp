@@ -30,6 +30,17 @@ public class ForegroundService extends Service {
     final static String CHANNEL_ID = "123456";
     final static String EXTRA_MAC_ADDRESS = "EXTRA_MAC_ADDRESS";
 
+    private static final UUID BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private BluetoothAdapter mBTAdapter;
+    private BluetoothSocket mBTSocket = null;
+
+    public final static int MESSAGE_READ = 2;
+    private final static int CONNECTING_STATUS = 3;
+
+    private ConnectedThread mConnectedThread;
+
+    private Handler mHandler;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String input = intent.getStringExtra("inputExtra");
@@ -47,18 +58,6 @@ public class ForegroundService extends Service {
         startForeground(1, notification);
 
         tryToConnect();
-
-        // here is the code you wanna run in background
-       // new Thread(() -> {
-       //     while (true) {
-       //         try {
-       //             Thread.sleep(1000);
-       //         } catch (InterruptedException e) {
-       //             throw new RuntimeException(e);
-       //         }
-       //         Log.d("", "Service is running");
-       //     }
-       // }).start();
 
         return START_STICKY;
     }
@@ -82,17 +81,6 @@ public class ForegroundService extends Service {
 
         getSystemService(NotificationManager.class).createNotificationChannel(serviceChannel);
     }
-
-    private static final UUID BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    private BluetoothAdapter mBTAdapter;
-    private BluetoothSocket mBTSocket = null;
-
-    public final static int MESSAGE_READ = 2;
-    private final static int CONNECTING_STATUS = 3;
-
-    private ConnectedThread mConnectedThread;
-
-    private Handler mHandler;
 
     private void tryToConnect() {
 

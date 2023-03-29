@@ -20,7 +20,11 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.example.ttgo_smartwatch_app.database.DatabaseManager;
+import com.example.ttgo_smartwatch_app.database.entity.Movement;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -42,6 +46,8 @@ public class ForegroundService extends Service {
     private ConnectedThread mConnectedThread;
 
     private Handler mHandler;
+
+    private DatabaseManager databaseManager;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -72,6 +78,7 @@ public class ForegroundService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        databaseManager = new DatabaseManager(getApplicationContext());
     }
 
     private void createNotificationChannel() {
@@ -132,24 +139,6 @@ public class ForegroundService extends Service {
         }).start();
     }
 
-    private void parseMessage(String readMessage) {
-        String[] messages = readMessage.split("\r\n");
-        for (String message : messages) {
-            try {
-
-                JSONObject obj = new JSONObject(message);
-
-                Log.d("My App", obj.toString());
-
-            } catch (Throwable t) {
-                String shortMessage = message.length() > 10
-                        ? message.substring(10)
-                        : message;
-               // Log.e("My App", "Could not parse malformed JSON: \"" + shortMessage + "\"");
-            }
-        }
-    }
-
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
         try {
             final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", UUID.class);
@@ -159,4 +148,47 @@ public class ForegroundService extends Service {
         }
         return device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
     }
+
+    private void parseMessage(String readMessage) {
+        String[] messages = readMessage.split("\r\n");
+        for (String message : messages) {
+            try {
+
+                JSONObject obj = new JSONObject(message);
+                Log.d("My App", obj.toString());
+
+                String type = obj.getString("type");
+
+                if (type.equals("movement_data")) {
+                    parseMovementAndSave(obj);
+                } else if (type.equals("other_data")) {
+                    // TODO parse other data
+                } else if (type.equals("other_data2")) {
+
+                }
+
+            } catch (Throwable t) {
+                String shortMessage = message.length() > 10
+                        ? message.substring(10)
+                        : message;
+                // Log.e("My App", "Could not parse malformed JSON: \"" + shortMessage + "\"");
+            }
+        }
+    }
+
+    private void parseMovementAndSave(JSONObject obj) {
+        try {
+            // Parsing JSON to Movement model
+            Movement movement = new Movement();
+            movement.battery = obj.getInt("battery");
+            movement.temperature = obj.getInt("temperature");
+
+            // Saving to database
+            databaseManager.dao.insertAllMovements(movement);
+
+        } catch (JSONException e) {
+            Log.e("My App", "error parsing: " + obj);
+        }
+    }
+
 }

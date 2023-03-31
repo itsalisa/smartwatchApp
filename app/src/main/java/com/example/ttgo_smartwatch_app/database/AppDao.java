@@ -12,7 +12,7 @@ import java.util.List;
 @Dao
 public interface AppDao {
 
-    @Query("SELECT * FROM movement")
+    @Query("SELECT * FROM movements")
     List<Movement> getAllMovements();
 
     @Insert

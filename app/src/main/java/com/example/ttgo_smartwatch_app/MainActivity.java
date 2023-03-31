@@ -23,20 +23,41 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.ttgo_smartwatch_app.database.DatabaseManager;
+import com.example.ttgo_smartwatch_app.database.entity.Movement;
+
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
     TextView mBuffer;
 
+    DatabaseManager databaseManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mBuffer = findViewById(R.id.buffer);
+        databaseManager = new DatabaseManager(getApplicationContext());
+
+        new Thread() {
+            @Override
+            public void run() {
+               List<Movement> movements = databaseManager.dao.getAllMovements();
+                final String text = movements.get(0).battery + "";
+               runOnUiThread(new Runnable() {
+                   @Override
+                   public void run() {
+                       mBuffer.setText(text);
+                   }
+               });
+            }
+        }.start();
     }
 
     @Override
@@ -143,11 +164,11 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
         try {
             final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", UUID.class);
-            return (BluetoothSocket) m.invoke(device, BT_MODULE_UUID);
+            return (BluetoothSocket) m.invoke(device, device.getUuids()[0].getUuid());
         } catch (Exception e) {
             Log.e("TAG", "Could not create Insecure RFComm Connection",e);
         }
-        return device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
+        return device.createRfcommSocketToServiceRecord(device.getUuids()[0].getUuid());
     }
 
 

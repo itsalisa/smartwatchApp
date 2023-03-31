@@ -142,11 +142,11 @@ public class ForegroundService extends Service {
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
         try {
             final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", UUID.class);
-            return (BluetoothSocket) m.invoke(device, BT_MODULE_UUID);
+            return (BluetoothSocket) m.invoke(device, device.getUuids()[0].getUuid());
         } catch (Exception e) {
             Log.e("TAG", "Could not create Insecure RFComm Connection",e);
         }
-        return device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
+        return device.createRfcommSocketToServiceRecord(device.getUuids()[0].getUuid());
     }
 
     private void parseMessage(String readMessage) {
@@ -184,9 +184,14 @@ public class ForegroundService extends Service {
             movement.temperature = obj.getInt("temperature");
 
             // Saving to database
-            databaseManager.dao.insertAllMovements(movement);
+            new Thread() {
+                @Override
+                public void run() {
+                    databaseManager.dao.insertAllMovements(movement);
+                }
+            }.start();
 
-        } catch (JSONException e) {
+        } catch (JSONException | IllegalStateException e) {
             Log.e("My App", "error parsing: " + obj);
         }
     }

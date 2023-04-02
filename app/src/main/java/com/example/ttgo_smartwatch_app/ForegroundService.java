@@ -24,7 +24,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.example.ttgo_smartwatch_app.database.DatabaseManager;
+import com.example.ttgo_smartwatch_app.database.entity.Date;
+import com.example.ttgo_smartwatch_app.database.entity.Location;
 import com.example.ttgo_smartwatch_app.database.entity.Movement;
+import com.example.ttgo_smartwatch_app.database.entity.Time;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -149,7 +152,7 @@ public class ForegroundService extends Service {
         return device.createRfcommSocketToServiceRecord(device.getUuids()[0].getUuid());
     }
 
-    private void parseMessage(String readMessage) {
+      private void parseMessage(String readMessage) {
         String[] messages = readMessage.split("\r\n");
         for (String message : messages) {
             try {
@@ -161,9 +164,12 @@ public class ForegroundService extends Service {
 
                 if (type.equals("movement_data")) {
                     parseMovementAndSave(obj);
-                } else if (type.equals("other_data")) {
-                    // TODO parse other data
-                } else if (type.equals("other_data2")) {
+                } else if (type.equals("date_data")) {
+                    parseDateAndSave(obj);
+                } else if (type.equals("time_data")) {
+                    parseTimeAndSave(obj);
+                } else if (type.equals("location_data")) {
+                    parseLocationAndSave(obj);
 
                 }
 
@@ -171,7 +177,7 @@ public class ForegroundService extends Service {
                 String shortMessage = message.length() > 10
                         ? message.substring(10)
                         : message;
-                // Log.e("My App", "Could not parse malformed JSON: \"" + shortMessage + "\"");
+                 Log.e("My App", "Could not parse malformed JSON: \"" + shortMessage + "\"");
             }
         }
     }
@@ -182,12 +188,73 @@ public class ForegroundService extends Service {
             Movement movement = new Movement();
             movement.battery = obj.getInt("battery");
             movement.temperature = obj.getInt("temperature");
+            movement.isCharging = obj.getInt("is_Charging");
+            movement.accelerometerX = obj.getInt("accelerometer_x");
+            movement.accelerometerY = obj.getInt("accelerometer_y");
+            movement.accelerometerZ = obj.getInt("accelerometer_z");
+            movement.StepCounter = obj.getInt("Step_Counter");
 
             // Saving to database
             new Thread() {
                 @Override
                 public void run() {
                     databaseManager.dao.insertAllMovements(movement);
+                }
+            }.start();
+
+        } catch (JSONException | IllegalStateException e) {
+            Log.e("My App", "error parsing: " + obj);
+        }
+    }
+    private void parseDateAndSave(JSONObject obj) {
+        try {
+            Date date = new Date();
+            date.year = obj.getInt("year");
+            date.month = obj.getInt("month");
+            date.day = obj.getInt("day");
+
+            new Thread() {
+                @Override
+                public void run() {
+                    databaseManager.dao.insertAllDates(date);
+                }
+            }.start();
+
+        } catch (JSONException | IllegalStateException e) {
+            Log.e("My App", "error parsing: " + obj);
+        }
+
+    }
+
+    private void parseTimeAndSave(JSONObject obj) {
+        try {
+            Time time = new Time();
+            time.hour = obj.getInt("hour");
+            time.minutes = obj.getInt("minutes");
+            time.seconds = obj.getInt("seconds");
+
+            new Thread() {
+                @Override
+                public void run() {
+                    databaseManager.dao.insertAllTimes(time);
+                }
+            }.start();
+
+        } catch (JSONException | IllegalStateException e) {
+            Log.e("My App", "error parsing: " + obj);
+        }
+    }
+
+    private void parseLocationAndSave(JSONObject obj) {
+        try {
+            Location location = new Location();
+            location.lattitude = obj.getInt("lattitude");
+            location.longitude = obj.getInt("longitude");
+
+            new Thread() {
+                @Override
+                public void run() {
+                    databaseManager.dao.insertAllLocations(location);
                 }
             }.start();
 

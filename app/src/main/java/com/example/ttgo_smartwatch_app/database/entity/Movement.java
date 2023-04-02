@@ -16,4 +16,20 @@ public class Movement {
     @ColumnInfo(name = "temperature")
     public int temperature;
 
+    @ColumnInfo(name = "is_Charging")
+    public int isCharging;
+
+    @ColumnInfo(name = "accelerometer_x")
+    public int accelerometerX;
+
+    @ColumnInfo(name = "accelerometer_y")
+    public int accelerometerY;
+
+    @ColumnInfo(name = "accelerometer_z")
+    public int accelerometerZ;
+
+    @ColumnInfo(name = "Step_Counter")
+    public int StepCounter;
+
 }
+

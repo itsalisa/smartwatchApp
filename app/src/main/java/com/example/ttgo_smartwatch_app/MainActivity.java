@@ -24,7 +24,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.ttgo_smartwatch_app.database.DatabaseManager;
+import com.example.ttgo_smartwatch_app.database.entity.Date;
+import com.example.ttgo_smartwatch_app.database.entity.Location;
 import com.example.ttgo_smartwatch_app.database.entity.Movement;
+import com.example.ttgo_smartwatch_app.database.entity.Time;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -69,7 +72,27 @@ public class MainActivity extends AppCompatActivity {
     private void setupViews() {
         runOnBackground(() -> {
             List<Movement> movements = databaseManager.dao.getAllMovements();
-            final String text = movements.get(0).battery + "";
+            List<Date> dates = databaseManager.dao.getAllDates();
+            List<Time> times = databaseManager.dao.getAllTimes();
+            List<Location> locations = databaseManager.dao.getAllLocations();
+            if (movements.isEmpty() || dates.isEmpty() || times.isEmpty() || locations.isEmpty()) {
+                return;
+            }
+            final String text = "" + movements.get(0).battery
+                    + movements.get(0).temperature
+                    + movements.get(0).isCharging
+                    + movements.get(0).accelerometerX
+                    + movements.get(0).accelerometerY
+                    + movements.get(0).accelerometerZ
+                    + movements.get(0).StepCounter
+                    + dates.get(0).year
+                    + dates.get(0).month
+                    + dates.get(0).day
+                    + times.get(0).hour
+                    + times.get(0).minutes
+                    + times.get(0).seconds
+                    + locations.get(0).lattitude
+                    + locations.get(0).longitude;
             runOnUiThread(() -> {
                 // some UI code
                 mBuffer.setText(text);

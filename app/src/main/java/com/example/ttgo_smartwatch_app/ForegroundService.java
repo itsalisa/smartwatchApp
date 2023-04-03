@@ -164,11 +164,11 @@ public class ForegroundService extends Service {
 
                 if (type.equals("movement_data")) {
                     parseMovementAndSave(obj);
-                } else if (type.equals("date_data")) {
+                } else if (type.equals("date")) {
                     parseDateAndSave(obj);
-                } else if (type.equals("time_data")) {
+                } else if (type.equals("time")) {
                     parseTimeAndSave(obj);
-                } else if (type.equals("location_data")) {
+                } else if (type.equals("location")) {
                     parseLocationAndSave(obj);
 
                 }
@@ -188,11 +188,11 @@ public class ForegroundService extends Service {
             Movement movement = new Movement();
             movement.battery = obj.getInt("battery");
             movement.temperature = obj.getInt("temperature");
-            movement.isCharging = obj.getInt("is_Charging");
+            movement.isCharging = obj.getInt("is_charging");
             movement.accelerometerX = obj.getInt("accelerometer_x");
             movement.accelerometerY = obj.getInt("accelerometer_y");
             movement.accelerometerZ = obj.getInt("accelerometer_z");
-            movement.StepCounter = obj.getInt("Step_Counter");
+            movement.StepCounter = obj.getInt("step_counter");
 
             // Saving to database
             new Thread() {
@@ -204,6 +204,7 @@ public class ForegroundService extends Service {
 
         } catch (JSONException | IllegalStateException e) {
             Log.e("My App", "error parsing: " + obj);
+            e.printStackTrace();
         }
     }
     private void parseDateAndSave(JSONObject obj) {
@@ -216,7 +217,7 @@ public class ForegroundService extends Service {
             new Thread() {
                 @Override
                 public void run() {
-                    databaseManager.dao.insertAllDates(date);
+                   databaseManager.dao.insertAllDates(date);
                 }
             }.start();
 
@@ -230,8 +231,8 @@ public class ForegroundService extends Service {
         try {
             Time time = new Time();
             time.hour = obj.getInt("hour");
-            time.minutes = obj.getInt("minutes");
-            time.seconds = obj.getInt("seconds");
+            time.minutes = obj.getInt("minute");
+            time.seconds = obj.getInt("second");
 
             new Thread() {
                 @Override
@@ -242,6 +243,7 @@ public class ForegroundService extends Service {
 
         } catch (JSONException | IllegalStateException e) {
             Log.e("My App", "error parsing: " + obj);
+            e.printStackTrace();
         }
     }
 

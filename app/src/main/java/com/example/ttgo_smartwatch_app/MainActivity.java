@@ -78,21 +78,21 @@ public class MainActivity extends AppCompatActivity {
             if (movements.isEmpty() || dates.isEmpty() || times.isEmpty() || locations.isEmpty()) {
                 return;
             }
-            final String text = "" + movements.get(0).battery
-                    + movements.get(0).temperature
-                    + movements.get(0).isCharging
-                    + movements.get(0).accelerometerX
-                    + movements.get(0).accelerometerY
-                    + movements.get(0).accelerometerZ
-                    + movements.get(0).StepCounter
-                    + dates.get(0).year
-                    + dates.get(0).month
-                    + dates.get(0).day
-                    + times.get(0).hour
-                    + times.get(0).minutes
-                    + times.get(0).seconds
-                    + locations.get(0).lattitude
-                    + locations.get(0).longitude;
+            final String text = "battery = " + movements.get(0).battery + ", "
+                    + "temperature = " + movements.get(0).temperature + ", "
+                    + "Is Charging = " + movements.get(0).isCharging + ", "
+                    + "Accelerometer X = " + movements.get(0).accelerometerX + ", "
+                    + "Accelerometer Y = " + movements.get(0).accelerometerY + ", "
+                    + "Accelerometer Z = " + movements.get(0).accelerometerZ + ", "
+                    + "Step Counter = " + movements.get(0).StepCounter + ", "
+                    + "Year = " + dates.get(0).year + ", "
+                    + "Month = " + dates.get(0).month + ", "
+                    + "Day = " + dates.get(0).day + ", "
+                    + "Hour = " + times.get(0).hour + ", "
+                    + "Minutes = " + times.get(0).minutes + ", "
+                    + "Seconds = " + times.get(0).seconds + ", "
+                    + "Latitude = " + locations.get(0).lattitude + ", "
+                    + "Longitude = " + locations.get(0).longitude;
             runOnUiThread(() -> {
                 // some UI code
                 mBuffer.setText(text);

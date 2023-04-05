@@ -32,6 +32,7 @@ import com.example.ttgo_smartwatch_app.database.entity.Movement;
 import com.example.ttgo_smartwatch_app.database.entity.Time;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -167,31 +168,52 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setupSecondChart() {
+        // Run queries on background to avoid blocking the main UI thread
         runOnBackground(() -> {
-        List<Movement> movements = databaseManager.dao.getAllMovements();
+        List<Movement> movements = databaseManager.dao.getAllMovements(); // Retrieve from database
 
+            // Group movements by hour
+            HashMap<Integer, Float> stepsByHour = new HashMap<>();
+            for (Movement movement : movements) {
+                long timestamp = movement.timeStamp;
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(timestamp);
+                int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                float steps = movement.StepCounter;
+                if (stepsByHour.containsKey(hour)) {
+                    steps += stepsByHour.get(hour);
+                }
+                stepsByHour.put(hour, steps);
+            }
+        // Initialise lists for the data
         ArrayList<DataEntry> stepCountData = new ArrayList<>();
         ArrayList<DataEntry> caloriesBurnedData = new ArrayList<>();
 
-        for (Movement movement : movements) {
-            float steps = movement.StepCounter;
-            stepCountData.add(new ValueDataEntry(String.valueOf(movement.uid), steps));
+        // Go through stepByHour and populate data lists
+        for (int hour = 0; hour < 24; hour ++) {
+            float steps = stepsByHour.containsKey(hour) ? stepsByHour.get(hour) : 0;
+            // Add new data entry to list
+            stepCountData.add(new ValueDataEntry(String.valueOf(hour), steps));
 
-            float calories = steps / 20; // 100 calories burned per 2000 steps
-            caloriesBurnedData.add(new ValueDataEntry(String.valueOf(movement.uid), calories));
+            float calories = steps / 20; // Calculate calories burned - 100 calories burned per 2000 steps
+            caloriesBurnedData.add(new ValueDataEntry(String.valueOf(hour), calories));
         }
+        // Initialising set of data for the chart
         Set set1 = Set.instantiate();
         set1.data(stepCountData);
+        // Map the data to the chart format
         Mapping stepCountMapping = set1.mapAs("{ x: 'x', value: 'value' }");
 
         Set set2 = Set.instantiate();
         set2.data(caloriesBurnedData);
         Mapping caloriesBurnedMapping = set2.mapAs("{ x: 'x', value: 'value2' }");
 
+        // New chart instance
         Cartesian cartesian = AnyChart.cartesian();
 
         cartesian.title("Step Count and Calories Burned");
 
+        // Line series for the step count data
         Line stepCountLine = cartesian.line(stepCountMapping);
         stepCountLine.name("Step Count");
         stepCountLine.color("#1976d2");
@@ -206,9 +228,14 @@ public class MainActivity extends AppCompatActivity {
         cartesian.yAxis(1).title("Calories Burned");
 
         AnyChartView anyChartView = findViewById(R.id.any_chart_view);
-        anyChatView.setChart(cartesian);
+
+            // Update the UI on the main thread with the new chart
             runOnUiThread(() -> {
-                chartView.setChart(cartesian);}
+                anyChartView.setChart(cartesian);
+            });
+        });
+    }
+
     private void showConnectionDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("Connect to Watch?")

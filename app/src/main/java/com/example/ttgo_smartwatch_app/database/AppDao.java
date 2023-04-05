@@ -18,6 +18,9 @@ public interface AppDao {
     @Query("SELECT * FROM movements")
     List<Movement> getAllMovements();
 
+    @Query("SELECT * FROM movements WHERE timestamp > :date ORDER BY timestamp")
+    List<Movement> getLastMovements(long date);
+
     @Query("SELECT * FROM dates")
     List<Date> getAllDates();
 

@@ -186,6 +186,7 @@ public class ForegroundService extends Service {
         try {
             // Parsing JSON to Movement model
             Movement movement = new Movement();
+            movement.timeStamp = System.currentTimeMillis();
             movement.battery = obj.getInt("battery");
             movement.temperature = obj.getInt("temperature");
             movement.isCharging = obj.getInt("is_charging");

@@ -2,26 +2,15 @@ package com.example.ttgo_smartwatch_app;
 
 import static com.example.ttgo_smartwatch_app.ForegroundService.EXTRA_MAC_ADDRESS;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.anychart.AnyChart;
 import com.anychart.AnyChartView;
@@ -29,6 +18,9 @@ import com.anychart.chart.common.dataentry.DataEntry;
 import com.anychart.chart.common.dataentry.ValueDataEntry;
 import com.anychart.charts.Cartesian;
 import com.anychart.core.cartesian.series.Column;
+import com.anychart.core.cartesian.series.Line;
+import com.anychart.data.Mapping;
+import com.anychart.data.Set;
 import com.anychart.enums.Anchor;
 import com.anychart.enums.HoverMode;
 import com.anychart.enums.Position;
@@ -39,14 +31,14 @@ import com.example.ttgo_smartwatch_app.database.entity.Location;
 import com.example.ttgo_smartwatch_app.database.entity.Movement;
 import com.example.ttgo_smartwatch_app.database.entity.Time;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
+
+    private final static long ONE_HOUR =  60 * 60 * 1000; // millis
 
     TextView mBuffer;
     AnyChartView chartView;
@@ -84,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupViews() {
         setupFirstChart();
+        setupSecondChart();
         runOnBackground(() -> {
             List<Movement> movements = databaseManager.dao.getAllMovements();
             List<Date> dates = databaseManager.dao.getAllDates();
@@ -92,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
             if (movements.isEmpty() || dates.isEmpty() || times.isEmpty() || locations.isEmpty()) {
                 return;
             }
+
             final String text = "battery = " + movements.get(0).battery + ", "
                     + "temperature = " + movements.get(0).temperature + ", "
                     + "Is Charging = " + movements.get(0).isCharging + ", "
@@ -115,45 +109,106 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupFirstChart() {
-        Cartesian cartesian = AnyChart.column();
 
-        List<DataEntry> data = new ArrayList<>();
-        data.add(new ValueDataEntry("Rouge", 80540));
-        data.add(new ValueDataEntry("Foundation", 94190));
-        data.add(new ValueDataEntry("Mascara", 102610));
-        data.add(new ValueDataEntry("Lip gloss", 110430));
-        data.add(new ValueDataEntry("Lipstick", 128000));
-        data.add(new ValueDataEntry("Nail polish", 143760));
-        data.add(new ValueDataEntry("Eyebrow pencil", 170670));
-        data.add(new ValueDataEntry("Eyeliner", 213210));
-        data.add(new ValueDataEntry("Eyeshadows", 249980));
+        runOnBackground(() -> {
+            // Prepare data from database
 
-        Column column = cartesian.column(data);
+            // Key hour, value step count
+            HashMap<Integer, Integer> preparedData = new HashMap<>();
+            long startDate = System.currentTimeMillis() - 24 * 60 * 60 * 1000;
+            List<Movement> movements = databaseManager.dao.getLastMovements(startDate);
 
-        column.tooltip()
-                .titleFormat("{%X}")
-                .position(Position.CENTER_BOTTOM)
-                .anchor(Anchor.CENTER_BOTTOM)
-                .offsetX(0d)
-                .offsetY(5d)
-                .format("${%Value}{groupsSeparator: }");
+            int hours = 1;
+            for (Movement movement : movements) {
+                long intervalStart = startDate + (hours - 1) * ONE_HOUR; // 20.00
+                long intervalEnd = startDate + (hours) * ONE_HOUR; // 21.00
+                if (movement.timeStamp > intervalStart && movement.timeStamp < intervalEnd) {
+                    preparedData.put(hours, movement.StepCounter);
+                } else if (movement.timeStamp > intervalEnd) {
+                    hours++;
+                }
+            }
 
-        cartesian.animation(true);
-        cartesian.title("Top 10 Cosmetic Products by Revenue");
+            // Put data to chart
+            List<DataEntry> data = new ArrayList<>();
+            for (Map.Entry<Integer, Integer> entry : preparedData.entrySet()) {
+                data.add(new ValueDataEntry(entry.getKey(), entry.getValue()));
+            }
 
-        cartesian.yScale().minimum(0d);
+            // Prepare chart stuff
+            Cartesian cartesian = AnyChart.column();
+            Column column = cartesian.column(data);
 
-        cartesian.yAxis(0).labels().format("${%Value}{groupsSeparator: }");
+            column.tooltip()
+                    .titleFormat("{%X}")
+                    .position(Position.CENTER_BOTTOM)
+                    .anchor(Anchor.CENTER_BOTTOM)
+                    .offsetX(0d)
+                    .offsetY(5d)
+                    .format("${%Value}{groupsSeparator: }");
 
-        cartesian.tooltip().positionMode(TooltipPositionMode.POINT);
-        cartesian.interactivity().hoverMode(HoverMode.BY_X);
+            cartesian.animation(true);
+            cartesian.title("Movement Chart");
 
-        cartesian.xAxis(0).title("Product");
-        cartesian.yAxis(0).title("Revenue");
+            cartesian.yScale().minimum(0d);
 
-        chartView.setChart(cartesian);
+            cartesian.yAxis(0).labels().format("${%Value}{groupsSeparator: }");
+
+            cartesian.tooltip().positionMode(TooltipPositionMode.POINT);
+            cartesian.interactivity().hoverMode(HoverMode.BY_X);
+
+            cartesian.xAxis(0).title("Data Type");
+            cartesian.yAxis(0).title("Value");
+
+            runOnUiThread(() -> {
+                chartView.setChart(cartesian);
+            });
+        });
     }
 
+    public void setupSecondChart() {
+        runOnBackground(() -> {
+        List<Movement> movements = databaseManager.dao.getAllMovements();
+
+        ArrayList<DataEntry> stepCountData = new ArrayList<>();
+        ArrayList<DataEntry> caloriesBurnedData = new ArrayList<>();
+
+        for (Movement movement : movements) {
+            float steps = movement.StepCounter;
+            stepCountData.add(new ValueDataEntry(String.valueOf(movement.uid), steps));
+
+            float calories = steps / 20; // 100 calories burned per 2000 steps
+            caloriesBurnedData.add(new ValueDataEntry(String.valueOf(movement.uid), calories));
+        }
+        Set set1 = Set.instantiate();
+        set1.data(stepCountData);
+        Mapping stepCountMapping = set1.mapAs("{ x: 'x', value: 'value' }");
+
+        Set set2 = Set.instantiate();
+        set2.data(caloriesBurnedData);
+        Mapping caloriesBurnedMapping = set2.mapAs("{ x: 'x', value: 'value2' }");
+
+        Cartesian cartesian = AnyChart.cartesian();
+
+        cartesian.title("Step Count and Calories Burned");
+
+        Line stepCountLine = cartesian.line(stepCountMapping);
+        stepCountLine.name("Step Count");
+        stepCountLine.color("#1976d2");
+
+        Column caloriesBurnedColumn = cartesian.column(caloriesBurnedMapping);
+        caloriesBurnedColumn.name("Calories Burned");
+        caloriesBurnedColumn.color("#ef5350");
+
+        cartesian.legend().enabled(true);
+
+        cartesian.yAxis(0).title("Step Count");
+        cartesian.yAxis(1).title("Calories Burned");
+
+        AnyChartView anyChartView = findViewById(R.id.any_chart_view);
+        anyChatView.setChart(cartesian);
+            runOnUiThread(() -> {
+                chartView.setChart(cartesian);}
     private void showConnectionDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("Connect to Watch?")

@@ -20,3 +20,4 @@ public class Time {
     public int seconds;
 
 }
+

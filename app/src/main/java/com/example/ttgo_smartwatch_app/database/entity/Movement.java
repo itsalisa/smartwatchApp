@@ -31,5 +31,7 @@ public class Movement {
     @ColumnInfo(name = "Step_Counter")
     public int StepCounter;
 
+    @ColumnInfo(name = "timestamp")
+    public long timeStamp;
 }
 

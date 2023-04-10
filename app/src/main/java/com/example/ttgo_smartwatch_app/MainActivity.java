@@ -41,20 +41,6 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    public double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-        double earthRadius = 6371; // km
-
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double distance = earthRadius * c;
-
-        return distance;
-    }
-
     DatabaseManager databaseManager;
 
     @Override
@@ -261,55 +247,55 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupThirdChart() {
         runOnBackground(() -> {
-        List<Movement> movements = databaseManager.dao.getAllMovements();
+            List<Movement> movements = databaseManager.dao.getAllMovements();
 
-        // Group by hour
-        HashMap<Integer, Integer> batteryByHour = new HashMap<>();
-        for (Movement movement : movements) {
-            long timestamp = movement.timeStamp;
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(timestamp);
-            int hour = calendar.get(Calendar.HOUR_OF_DAY);
-            int battery = movement.battery;
-            if (batteryByHour.containsKey(hour)) {
-                battery = batteryByHour.get(hour);
+            // Group by hour
+            HashMap<Integer, Integer> batteryByHour = new HashMap<>();
+            for (Movement movement : movements) {
+                long timestamp = movement.timeStamp;
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(timestamp);
+                int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                int battery = movement.battery;
+                if (batteryByHour.containsKey(hour)) {
+                    battery = batteryByHour.get(hour);
+                }
+                batteryByHour.put(hour, battery);
             }
-            batteryByHour.put(hour, battery);
-        }
 
-        // Initialising lists for the data
-        ArrayList<DataEntry> batteryData = new ArrayList<>();
+            // Initialising lists for the data
+            ArrayList<DataEntry> batteryData = new ArrayList<>();
 
-        // Going through the list and populating data list
-        for (int hour = 0; hour < 24; hour++) {
-            int battery = batteryByHour.containsKey(hour) ? batteryByHour.get(hour) : 0;
-            // Adding new data entry list
-            batteryData.add(new ValueDataEntry(String.valueOf(hour), battery));
-        }
-        // Creating chart
-        Cartesian batteryChart = AnyChart.cartesian();
-        batteryChart.animation(true);
-        batteryChart.padding(10d, 20d, 5d, 20d);
-        batteryChart.crosshair().enabled(true);
-        batteryChart.crosshair()
-                .yLabel(true)
-                .yStroke((Stroke) null, null, null, (String) null, (String) null);
-        batteryChart.tooltip().positionMode(TooltipPositionMode.POINT);
-        batteryChart.title("Battery percentage over time");
+            // Going through the list and populating data list
+            for (int hour = 0; hour < 24; hour++) {
+                int battery = batteryByHour.containsKey(hour) ? batteryByHour.get(hour) : 0;
+                // Adding new data entry list
+                batteryData.add(new ValueDataEntry(String.valueOf(hour), battery));
+            }
+            // Creating chart
+            Cartesian batteryChart = AnyChart.cartesian();
+            batteryChart.animation(true);
+            batteryChart.padding(10d, 20d, 5d, 20d);
+            batteryChart.crosshair().enabled(true);
+            batteryChart.crosshair()
+                    .yLabel(true)
+                    .yStroke((Stroke) null, null, null, (String) null, (String) null);
+            batteryChart.tooltip().positionMode(TooltipPositionMode.POINT);
+            batteryChart.title("Battery percentage over time");
 
-        Set batteryDataSet = Set.instantiate();
-        batteryDataSet.data(batteryData);
-        Mapping batteryMapping = batteryDataSet.mapAs("{ x: 'x', value: 'value' }");
+            Set batteryDataSet = Set.instantiate();
+            batteryDataSet.data(batteryData);
+            Mapping batteryMapping = batteryDataSet.mapAs("{ x: 'x', value: 'value' }");
 
-        Line batteryLine = batteryChart.line(batteryMapping);
-        batteryLine.name("Battery percentage");
+            Line batteryLine = batteryChart.line(batteryMapping);
+            batteryLine.name("Battery percentage");
 
-        batteryChart.legend().enabled(true);
-        batteryChart.legend().fontSize(13d);
-        batteryChart.legend().padding(0d, 0d, 10d, 0d);
+            batteryChart.legend().enabled(true);
+            batteryChart.legend().fontSize(13d);
+            batteryChart.legend().padding(0d, 0d, 10d, 0d);
 
-        batteryChart.yAxis(0).title("%");
-        batteryChart.xAxis(0).title("Hour");
+            batteryChart.yAxis(0).title("%");
+            batteryChart.xAxis(0).title("Hour");
 
         // Display the chart
         AnyChartView batteryChartView = findViewById(R.id.third_chart_view);
@@ -339,6 +325,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void runOnBackground(Runnable action) {
         new Thread(action).start();
+    }
+
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        double earthRadius = 6371; // km
+
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = earthRadius * c;
+
+        return distance;
     }
 
 }

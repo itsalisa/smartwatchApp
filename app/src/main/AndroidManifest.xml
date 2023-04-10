@@ -38,6 +38,8 @@
                 android:value="" />
         </activity>
 
+        <activity android:name=".DistanceActivity"/>
+
         <service android:name=".ForegroundService">
 
         </service>

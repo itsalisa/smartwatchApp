@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -76,6 +77,10 @@ public class MainActivity extends AppCompatActivity {
         setupFirstChart();
         setupSecondChart();
         setupThirdChart();
+
+        findViewById(R.id.runDistanceButton).setOnClickListener(v -> {
+            startActivity(new Intent(this, DistanceActivity.class));
+        });
 
     }
 

@@ -16,6 +16,7 @@ import com.anychart.AnyChart;
 import com.anychart.AnyChartView;
 import com.anychart.chart.common.dataentry.DataEntry;
 import com.anychart.chart.common.dataentry.ValueDataEntry;
+import com.anychart.charts.Waterfall;
 import com.anychart.charts.Cartesian;
 import com.anychart.core.cartesian.series.Column;
 import com.anychart.core.cartesian.series.Line;
@@ -40,10 +41,19 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final static long ONE_HOUR =  60 * 60 * 1000; // millis
+    public double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        double earthRadius = 6371; // km
 
-    TextView mBuffer;
-    AnyChartView chartView;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = earthRadius * c;
+
+        return distance;
+    }
 
     DatabaseManager databaseManager;
 
@@ -51,8 +61,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mBuffer = findViewById(R.id.buffer);
-        chartView = findViewById(R.id.any_chart_view);
+        //mBuffer = findViewById(R.id.buffer);
+        //chartView = findViewById(R.id.any_chart_view);
         databaseManager = new DatabaseManager(getApplicationContext());
 
         setupViews();
@@ -80,97 +90,10 @@ public class MainActivity extends AppCompatActivity {
         setupFirstChart();
         setupSecondChart();
         setupThirdChart();
-        setupFourthChart();
-        runOnBackground(() -> {
-            List<Movement> movements = databaseManager.dao.getAllMovements();
-            List<Date> dates = databaseManager.dao.getAllDates();
-            List<Time> times = databaseManager.dao.getAllTimes();
-            List<Location> locations = databaseManager.dao.getAllLocations();
-            if (movements.isEmpty() || dates.isEmpty() || times.isEmpty() || locations.isEmpty()) {
-                return;
-            }
 
-            final String text = "battery = " + movements.get(0).battery + ", "
-                    + "temperature = " + movements.get(0).temperature + ", "
-                    + "Is Charging = " + movements.get(0).isCharging + ", "
-                    + "Accelerometer X = " + movements.get(0).accelerometerX + ", "
-                    + "Accelerometer Y = " + movements.get(0).accelerometerY + ", "
-                    + "Accelerometer Z = " + movements.get(0).accelerometerZ + ", "
-                    + "Step Counter = " + movements.get(0).StepCounter + ", "
-                    + "Year = " + dates.get(0).year + ", "
-                    + "Month = " + dates.get(0).month + ", "
-                    + "Day = " + dates.get(0).day + ", "
-                    + "Hour = " + times.get(0).hour + ", "
-                    + "Minutes = " + times.get(0).minutes + ", "
-                    + "Seconds = " + times.get(0).seconds + ", "
-                    + "Latitude = " + locations.get(0).lattitude + ", "
-                    + "Longitude = " + locations.get(0).longitude;
-            runOnUiThread(() -> {
-                // some UI code
-                mBuffer.setText(text);
-            });
-        });
     }
 
-    private void setupFirstChart() {
-
-        runOnBackground(() -> {
-            // Prepare data from database
-
-            // Key hour, value step count
-            HashMap<Integer, Integer> preparedData = new HashMap<>();
-            long startDate = System.currentTimeMillis() - 24 * 60 * 60 * 1000;
-            List<Movement> movements = databaseManager.dao.getLastMovements(startDate);
-
-            int hours = 1;
-            for (Movement movement : movements) {
-                long intervalStart = startDate + (hours - 1) * ONE_HOUR; // 20.00
-                long intervalEnd = startDate + (hours) * ONE_HOUR; // 21.00
-                if (movement.timeStamp > intervalStart && movement.timeStamp < intervalEnd) {
-                    preparedData.put(hours, movement.StepCounter);
-                } else if (movement.timeStamp > intervalEnd) {
-                    hours++;
-                }
-            }
-
-            // Put data to chart
-            List<DataEntry> data = new ArrayList<>();
-            for (Map.Entry<Integer, Integer> entry : preparedData.entrySet()) {
-                data.add(new ValueDataEntry(entry.getKey(), entry.getValue()));
-            }
-
-            // Prepare chart stuff
-            Cartesian cartesian = AnyChart.column();
-            Column column = cartesian.column(data);
-
-            column.tooltip()
-                    .titleFormat("{%X}")
-                    .position(Position.CENTER_BOTTOM)
-                    .anchor(Anchor.CENTER_BOTTOM)
-                    .offsetX(0d)
-                    .offsetY(5d)
-                    .format("${%Value}{groupsSeparator: }");
-
-            cartesian.animation(true);
-            cartesian.title("Movement Chart");
-
-            cartesian.yScale().minimum(0d);
-
-            cartesian.yAxis(0).labels().format("${%Value}{groupsSeparator: }");
-
-            cartesian.tooltip().positionMode(TooltipPositionMode.POINT);
-            cartesian.interactivity().hoverMode(HoverMode.BY_X);
-
-            cartesian.xAxis(0).title("Data Type");
-            cartesian.yAxis(0).title("Value");
-
-            runOnUiThread(() -> {
-                chartView.setChart(cartesian);
-            });
-        });
-    }
-
-    public void setupSecondChart() {
+    public void setupFirstChart() {
         // Run queries on background to avoid blocking the main UI thread
         runOnBackground(() -> {
         List<Movement> movements = databaseManager.dao.getAllMovements(); // Retrieve from database
@@ -212,39 +135,131 @@ public class MainActivity extends AppCompatActivity {
         Mapping caloriesBurnedMapping = set2.mapAs("{ x: 'x', value: 'value2' }");
 
         // New chart instance
-        Cartesian cartesian = AnyChart.cartesian();
+        Cartesian activityChart = AnyChart.cartesian();
 
-        cartesian.title("Step Count and Calories Burned");
+            activityChart.title("Step Count and Calories Burned");
 
         // Line series for the step count data
-        Line stepCountLine = cartesian.line(stepCountMapping);
+        Line stepCountLine = activityChart.line(stepCountMapping);
         stepCountLine.name("Step Count");
         stepCountLine.color("#1976d2");
 
-        Column caloriesBurnedColumn = cartesian.column(caloriesBurnedMapping);
+        Column caloriesBurnedColumn = activityChart.column(caloriesBurnedMapping);
         caloriesBurnedColumn.name("Calories Burned");
         caloriesBurnedColumn.color("#ef5350");
 
-        cartesian.legend().enabled(true);
+        activityChart.legend().enabled(true);
 
-        cartesian.yAxis(0).title("Step Count");
-        cartesian.yAxis(1).title("Calories Burned");
+        activityChart.yAxis(0).title("Step Count");
+        activityChart.yAxis(1).title("Calories Burned");
 
-        AnyChartView anyChartView = findViewById(R.id.any_chart_view);
+        AnyChartView activityChartView = findViewById(R.id.first_chart_view);
 
             // Update the UI on the main thread with the new chart
             runOnUiThread(() -> {
-                anyChartView.setChart(cartesian);
+                activityChartView.setChart(activityChart);
             });
         });
     }
 
+    private void setupSecondChart() {
+        runOnBackground(() -> {
+            // Get data from the locations and movements database
+        List<Location> locations = databaseManager.dao.getAllLocations();
+        List<Movement> movements = databaseManager.dao.getAllMovements();
+
+        // Creating a harshmap to store locations by hour
+        HashMap<Integer, List<Location>> locationsByHour = new HashMap<>();
+        for (Location location : locations) {
+            // Getting hour from location timestamp
+            long timestamp = location.timeStamp;
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(timestamp);
+            int hour = calendar.get(Calendar.HOUR_OF_DAY);
+            // Add the location to the list for this hour
+            if (locationsByHour.containsKey(hour)) {
+                locationsByHour.get(hour).add(location);
+            } else {
+                List<Location> hourLocations = new ArrayList<>();
+                hourLocations.add(location);
+                locationsByHour.put(hour, hourLocations);
+            }
+        }
+
+        // Creating an array list of data entries for the chart
+        ArrayList<DataEntry> data = new ArrayList<>();
+        // For each hour of the day get the locations and movements for this hour
+        for (int hour = 0; hour < 24; hour++) {
+            List<Location> hourLocations = locationsByHour.containsKey(hour) ? locationsByHour.get(hour) : new ArrayList<>();
+            int hourSteps = 0;
+            double hourDistance = 0;
+            for (int i = 0; i < hourLocations.size(); i++) {
+                // Calculating the distance between each pair of locations
+                if (i > 0) {
+                    Location prevLocation = hourLocations.get(i - 1);
+                    Location currLocation = hourLocations.get(i);
+                    double prevLat = prevLocation.lattitude;
+                    double prevLong = prevLocation.longitude;
+                    double currLat = currLocation.lattitude;
+                    double currLong = currLocation.longitude;
+                    double distance = calculateDistance (prevLat, prevLong, currLat, currLong);
+                    hourDistance += distance;
+                }
+            }
+            // Getting the number of steps for this hour
+            for (Movement movement : movements) {
+                long timestamp = movement.timeStamp;
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(timestamp);
+                if (calendar.get(Calendar.HOUR_OF_DAY) == hour) {
+                    hourSteps += movement.StepCounter;
+                }
+            }
+            // Adding the data entries for this hour to the arraylist
+            data.add(new ValueDataEntry(String.valueOf(hour), hourDistance));
+            data.add(new ValueDataEntry("Starting point", 0));
+            data.add(new ValueDataEntry("Distance", hourDistance));
+            data.add(new ValueDataEntry("Steps", hourSteps));
+        }
+
+        // Creating and customising waterfall chart
+        Waterfall distanceChart = AnyChart.waterfall();
+        distanceChart.animation(true);
+        distanceChart.padding(10d, 20d, 5d, 20d);
+        distanceChart.crosshair().enabled(true);
+        distanceChart.crosshair()
+                .yLabel(true)
+                .yStroke((Stroke) null, null, null, (String) null, (String) null);
+        distanceChart.tooltip().positionMode(TooltipPositionMode.POINT);
+        distanceChart.title("Distance and Steps");
+
+        // Formatting chart labels
+            distanceChart.labels().format(
+            "function() {\n" +
+                    "      if (this['isTotal']) {\n" +
+                    "        return anychart.format.number(this.absolute, {\n" +
+                    "          scale: true\n" +
+                    "        })\n" +
+                    "      }\n" +
+                    "\n" +
+                    "      return anychart.format.number(this.value, {\n" +
+                    "        scale: true\n" +
+                    "      })\n" +
+                    "    }");
+
+        distanceChart.legend().enabled(true);
+        distanceChart.legend().fontSize(13d);
+        distanceChart.legend().padding(10d, 25d, 10d, 25d);
+
+        AnyChartView distanceChartView = findViewById(R.id.second_chart_view);
+
+        runOnUiThread(() -> {
+            distanceChartView.setChart(distanceChart);
+        });
+    });
+}
+
     private void setupThirdChart() {
-
-
-    }
-
-    private void setupFourthChart() {
         runOnBackground(() -> {
         List<Movement> movements = databaseManager.dao.getAllMovements();
 
@@ -297,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
         batteryChart.xAxis(0).title("Hour");
 
         // Display the chart
-        AnyChartView batteryChartView = findViewById(R.id.any_chart_view);
+        AnyChartView batteryChartView = findViewById(R.id.third_chart_view);
             runOnUiThread(() -> {
                 batteryChartView.setChart(batteryChart);
             });

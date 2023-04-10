@@ -16,4 +16,7 @@ public class Location {
     @ColumnInfo(name = "longitude")
     public int longitude;
 
+    @ColumnInfo(name = "timestamp")
+    public long timeStamp;
+
 }

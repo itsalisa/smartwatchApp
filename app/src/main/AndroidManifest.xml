@@ -38,7 +38,11 @@
                 android:value="" />
         </activity>
 
+        <activity android:name=".CaloriesActivity"/>
+
         <activity android:name=".DistanceActivity"/>
+
+        <activity android:name=".BatteryActivity"/>
 
         <service android:name=".ForegroundService">
 

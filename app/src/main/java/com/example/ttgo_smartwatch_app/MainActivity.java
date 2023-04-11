@@ -74,12 +74,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupViews() {
-        setupFirstChart();
-        setupSecondChart();
-        setupThirdChart();
+       // setupFirstChart();
+       // setupSecondChart();
+       // setupThirdChart();
 
         findViewById(R.id.runDistanceButton).setOnClickListener(v -> {
             startActivity(new Intent(this, DistanceActivity.class));
+        });
+
+        findViewById(R.id.runCaloriesButton).setOnClickListener(v -> {
+            startActivity(new Intent(this, CaloriesActivity.class));
+        });
+
+        findViewById(R.id.runBatteryButton).setOnClickListener(v -> {
+            startActivity(new Intent(this, BatteryActivity.class));
         });
 
     }

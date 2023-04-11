@@ -13,9 +13,9 @@
           android:layout_height="wrap_content"
           android:orientation="vertical">
 
-          <!-- Second Chart -->
+          <!-- First Chart -->
             <com.anychart.AnyChartView
-                android:id="@+id/second_chart_view"
+                android:id="@+id/first_chart_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 />

@@ -13,6 +13,14 @@
           android:layout_height="wrap_content"
           android:orientation="vertical">
 
+          <ProgressBar
+              android:id="@+id/loading"
+              android:layout_width="50dp"
+              android:layout_height="50dp"
+              android:layout_gravity="center"
+              android:visibility="gone"
+              />
+
           <!-- First Chart -->
             <com.anychart.AnyChartView
                 android:id="@+id/first_chart_view"

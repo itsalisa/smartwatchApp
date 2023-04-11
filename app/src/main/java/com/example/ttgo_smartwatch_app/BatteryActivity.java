@@ -1,6 +1,7 @@
 package com.example.ttgo_smartwatch_app;
 
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -43,6 +44,7 @@ public class BatteryActivity extends AppCompatActivity {
 
     private void setupThirdChart() {
         runOnBackground(() -> {
+            showLoading(true);
             List<Movement> movements = databaseManager.dao.getAllMovements();
 
             // Group by hour
@@ -97,6 +99,7 @@ public class BatteryActivity extends AppCompatActivity {
             AnyChartView batteryChartView = findViewById(R.id.third_chart_view);
             runOnUiThread(() -> {
                 batteryChartView.setChart(batteryChart);
+                showLoading(false);
             });
         });
 
@@ -104,6 +107,19 @@ public class BatteryActivity extends AppCompatActivity {
 
     private void runOnBackground(Runnable action) {
         new Thread(action).start();
+    }
+
+    private void showLoading(boolean show) {
+        runOnUiThread(() -> {
+            View loading = findViewById(R.id.loading);
+            if (show) {
+                loading.setVisibility(View.VISIBLE);
+            } else {
+                loading.setVisibility(View.GONE);
+            }
+
+        });
+
     }
 
 }

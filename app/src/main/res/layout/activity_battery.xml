@@ -13,7 +13,15 @@
           android:layout_height="wrap_content"
           android:orientation="vertical">
 
-          <!-- Second Chart -->
+          <ProgressBar
+              android:id="@+id/loading"
+              android:layout_width="50dp"
+              android:layout_height="50dp"
+              android:layout_gravity="center"
+              android:visibility="gone"
+              />
+
+          <!-- Third Chart -->
             <com.anychart.AnyChartView
                 android:id="@+id/third_chart_view"
                 android:layout_width="match_parent"

@@ -1,6 +1,7 @@
 package com.example.ttgo_smartwatch_app;
 
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -13,6 +14,7 @@ import com.anychart.core.cartesian.series.Column;
 import com.anychart.core.cartesian.series.Line;
 import com.anychart.data.Mapping;
 import com.anychart.data.Set;
+import com.anychart.enums.Orientation;
 import com.example.ttgo_smartwatch_app.database.DatabaseManager;
 import com.example.ttgo_smartwatch_app.database.entity.Movement;
 
@@ -42,6 +44,7 @@ public class CaloriesActivity extends AppCompatActivity {
     public void setupFirstChart() {
         // Run queries on background to avoid blocking the main UI thread
         runOnBackground(() -> {
+            showLoading(true);
         List<Movement> movements = databaseManager.dao.getAllMovements(); // Retrieve from database
 
             // Group movements by hour
@@ -96,20 +99,36 @@ public class CaloriesActivity extends AppCompatActivity {
 
         activityChart.legend().enabled(true);
 
+        activityChart.xAxis(0).title("Hours");
         activityChart.yAxis(0).title("Step Count");
         activityChart.yAxis(1).title("Calories Burned");
+        activityChart.yAxis(1).orientation(Orientation.RIGHT);
+
 
         AnyChartView activityChartView = findViewById(R.id.first_chart_view);
 
             // Update the UI on the main thread with the new chart
             runOnUiThread(() -> {
                 activityChartView.setChart(activityChart);
+                showLoading(false);
             });
         });
     }
 
     private void runOnBackground(Runnable action) {
         new Thread(action).start();
+    }
+
+    private void showLoading(boolean show) {
+        runOnUiThread(() -> {
+            View loading = findViewById(R.id.loading);
+            if (show) {
+                loading.setVisibility(View.VISIBLE);
+            } else {
+                loading.setVisibility(View.GONE);
+            }
+
+        });
     }
 
 }

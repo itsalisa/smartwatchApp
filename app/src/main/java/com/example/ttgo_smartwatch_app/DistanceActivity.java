@@ -1,6 +1,7 @@
 package com.example.ttgo_smartwatch_app;
 
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -54,6 +55,7 @@ public class DistanceActivity extends AppCompatActivity {
 
     private void setupSecondChart() {
         runOnBackground(() -> {
+            showLoading(true);
             // Get data from the locations and movements database
             List<Location> locations = databaseManager.dao.getAllLocations();
             List<Movement> movements = databaseManager.dao.getAllMovements();
@@ -145,12 +147,25 @@ public class DistanceActivity extends AppCompatActivity {
 
             runOnUiThread(() -> {
                 distanceChartView.setChart(distanceChart);
+                showLoading(false);
             });
         });
     }
 
     private void runOnBackground(Runnable action) {
         new Thread(action).start();
+    }
+
+    private void showLoading(boolean show) {
+        runOnUiThread(() -> {
+            View loading = findViewById(R.id.loading);
+            if (show) {
+                loading.setVisibility(View.VISIBLE);
+            } else {
+                loading.setVisibility(View.GONE);
+            }
+
+        });
     }
 
 }

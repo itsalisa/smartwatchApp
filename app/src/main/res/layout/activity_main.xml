@@ -13,27 +13,6 @@
           android:layout_height="wrap_content"
           android:orientation="vertical">
 
-          <!-- <TextView
-                 android:id="@+id/buffer"
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
-                 android:text="Hello World!"
-                 android:layout_marginTop="10dp"
-                 app:layout_constraintEnd_toEndOf="parent"
-                 app:layout_constraintStart_toStartOf="parent"
-                 app:layout_constraintTop_toTopOf="parent"
-                 /> -->
-
-          <!--  <com.anychart.AnyChartView
-                android:id="@+id/any_chart_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="40dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/buffer" /> -->
-
           <Button
               android:id="@+id/runDistanceButton"
               android:layout_width="match_parent"

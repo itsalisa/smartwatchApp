@@ -143,6 +143,9 @@ public class DistanceActivity extends AppCompatActivity {
             distanceChart.legend().fontSize(13d);
             distanceChart.legend().padding(10d, 25d, 10d, 25d);
 
+            distanceChart.yAxis(0).title("KM");
+            distanceChart.xAxis(0).title("Steps");
+
             AnyChartView distanceChartView = findViewById(R.id.second_chart_view);
 
             runOnUiThread(() -> {

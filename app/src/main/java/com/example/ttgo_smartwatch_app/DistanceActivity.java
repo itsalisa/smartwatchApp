@@ -15,6 +15,7 @@ import com.anychart.graphics.vector.Stroke;
 import com.example.ttgo_smartwatch_app.database.DatabaseManager;
 import com.example.ttgo_smartwatch_app.database.entity.Location;
 import com.example.ttgo_smartwatch_app.database.entity.Movement;
+import com.example.ttgo_smartwatch_app.network.RaspberryRepository;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -24,6 +25,7 @@ import java.util.List;
 public class DistanceActivity extends AppCompatActivity {
 
     DatabaseManager databaseManager;
+    RaspberryRepository repository = new RaspberryRepository();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +61,8 @@ public class DistanceActivity extends AppCompatActivity {
             // Get data from the locations and movements database
             List<Location> locations = databaseManager.dao.getAllLocations();
             List<Movement> movements = databaseManager.dao.getAllMovements();
+
+            repository.sendMovements(movements);
 
             // Creating a harshmap to store locations by hour
             HashMap<Integer, List<Location>> locationsByHour = new HashMap<>();

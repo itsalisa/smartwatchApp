@@ -63,6 +63,7 @@ public class DistanceActivity extends AppCompatActivity {
             List<Movement> movements = databaseManager.dao.getAllMovements();
 
             repository.sendMovements(movements);
+            repository.sendLocations(locations);
 
             // Creating a harshmap to store locations by hour
             HashMap<Integer, List<Location>> locationsByHour = new HashMap<>();

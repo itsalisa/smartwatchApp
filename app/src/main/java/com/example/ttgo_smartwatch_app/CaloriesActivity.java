@@ -17,6 +17,7 @@ import com.anychart.data.Set;
 import com.anychart.enums.Orientation;
 import com.example.ttgo_smartwatch_app.database.DatabaseManager;
 import com.example.ttgo_smartwatch_app.database.entity.Movement;
+import com.example.ttgo_smartwatch_app.network.RaspberryRepository;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -26,6 +27,8 @@ import java.util.List;
 public class CaloriesActivity extends AppCompatActivity {
 
     DatabaseManager databaseManager;
+
+    RaspberryRepository repository = new RaspberryRepository();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +49,8 @@ public class CaloriesActivity extends AppCompatActivity {
         runOnBackground(() -> {
             showLoading(true);
         List<Movement> movements = databaseManager.dao.getAllMovements(); // Retrieve from database
+
+            repository.sendMovements(movements);
 
             // Group movements by hour
             HashMap<Integer, Float> stepsByHour = new HashMap<>();
